@@ -37,7 +37,7 @@ export const ChatMessages = memo(function ChatMessages({ messages, isLoading }: 
           
           {isLoading && (
             <div className="flex items-start space-x-3">
-              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
                 <Bot className="w-5 h-5 text-white" />
               </div>
               <div className="bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg">

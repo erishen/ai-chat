@@ -1,6 +1,6 @@
 'use client'
 
-import { useChat } from 'ai/react'
+import { useChat } from '@ai-sdk/react'
 import { ChatHeader } from '@/components/ChatHeader'
 import { ChatMessages } from '@/components/ChatMessages'
 import { Message } from '@/types/chat'
@@ -50,7 +50,7 @@ export default function Home() {
               onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               placeholder="输入您的消息... (Shift + Enter 换行)"
-              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none min-h-[44px] max-h-32"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white resize-none min-h-11 max-h-32"
               disabled={isLoading}
               rows={1}
             />
