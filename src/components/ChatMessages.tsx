@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, memo } from 'react'
 import { Message } from '@/types/chat'
 import { ChatMessage } from './ChatMessage'
 import { Bot, Loader2 } from 'lucide-react'
@@ -10,7 +10,7 @@ interface ChatMessagesProps {
   isLoading: boolean
 }
 
-export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
+export const ChatMessages = memo(function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -53,4 +53,4 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
       <div ref={messagesEndRef} />
     </div>
   )
-}
+})
