@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { Moon, Sun, Trash2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Trash2 } from 'lucide-react'
+import { Card, Button } from '@/components/ui'
+import { Flex, Stack } from '@/components/layout'
+import { ThemeToggle } from '@/components/theme'
 
 interface ChatHeaderProps {
   onClearChat: () => void
@@ -10,54 +11,39 @@ interface ChatHeaderProps {
 }
 
 export function ChatHeader({ onClearChat, messageCount }: ChatHeaderProps) {
-  const [isDark, setIsDark] = useState(false)
-
-  const toggleTheme = () => {
-    setIsDark(!isDark)
-    document.documentElement.classList.toggle('dark')
-  }
-
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-4">
-      <div className="flex items-center justify-between">
-        <div className="text-center flex-1">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+    <Card variant="elevated" className="mb-4 glass-effect">
+      <Flex justify="between" align="center">
+        <Stack spacing="xs" className="flex-1 text-center">
+          <h1 className="text-3xl font-bold text-foreground text-balance">
             AI 聊天助手
           </h1>
-          <p className="text-gray-600 dark:text-gray-300 mt-2">
+          <p className="text-muted-foreground">
             基于 Next.js 15 和 Vercel AI SDK 构建
           </p>
           {messageCount > 0 && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            <p className="text-sm text-muted-foreground">
               已发送 {messageCount} 条消息
             </p>
           )}
-        </div>
+        </Stack>
         
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={toggleTheme}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            title="切换主题"
-          >
-            {isDark ? (
-              <Sun className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            ) : (
-              <Moon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-            )}
-          </button>
+        <Flex gap="sm" align="center">
+          <ThemeToggle />
           
           {messageCount > 0 && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onClearChat}
-              className="p-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors text-red-600 dark:text-red-400"
+              className="text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20 hover-lift"
               title="清空聊天记录"
             >
               <Trash2 className="w-5 h-5" />
-            </button>
+            </Button>
           )}
-        </div>
-      </div>
-    </div>
+        </Flex>
+      </Flex>
+    </Card>
   )
 }

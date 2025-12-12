@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { ThemeProvider } from '@/components/theme'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -34,17 +35,20 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="zh-CN">
+    <html lang="zh-CN" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#ffffff" />
         <link rel="icon" href="/favicon.ico" />
       </head>
       <body className={inter.className}>
-        <ErrorBoundary>
-          <div className="min-h-screen bg-linear-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-            {children}
-          </div>
-        </ErrorBoundary>
+        <ThemeProvider defaultTheme="system">
+          <ErrorBoundary>
+            <div className="min-h-screen gradient-bg">
+              {children}
+            </div>
+          </ErrorBoundary>
+        </ThemeProvider>
       </body>
     </html>
   )

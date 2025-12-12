@@ -3,8 +3,11 @@
 @theme {
   --content: "./src/pages/**/*.{js,ts,jsx,tsx,mdx}", "./src/components/**/*.{js,ts,jsx,tsx,mdx}", "./src/app/**/*.{js,ts,jsx,tsx,mdx}";
   
+  /* Color System */
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
   --color-primary: hsl(var(--primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
   --color-secondary: hsl(var(--secondary));
@@ -17,12 +20,41 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
   
+  /* Radius System */
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
   
+  /* Animation System */
   --animate-fade-in: fadeIn 0.5s ease-in-out;
   --animate-slide-up: slideUp 0.3s ease-out;
+  --animate-slide-in: slideIn 0.3s ease-out;
+  --animate-bounce-in: bounceIn 0.6s ease-out;
+  
+  /* Spacing System */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+  
+  /* Shadow System */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* Utilities */
+@utility group {
+  position: relative;
+}
+
+@utility group-hover {
+  &:hover .group-hover\:* {
+    @apply opacity-100;
+  }
 }
 
 @keyframes fadeIn {
@@ -35,10 +67,30 @@
   100% { transform: translateY(0); opacity: 1; }
 }
 
+@keyframes slideIn {
+  0% { transform: translateX(-10px); opacity: 0; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.3); opacity: 0; }
+  50% { transform: scale(1.05); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
 @layer base {
   :root {
+    /* Light Theme */
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
@@ -51,11 +103,21 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 221.2 83.2% 53.3%;
     --radius: 0.5rem;
+    
+    /* Chat specific colors */
+    --chat-user-bg: 221.2 83.2% 53.3%;
+    --chat-user-text: 210 40% 98%;
+    --chat-assistant-bg: 210 40% 96%;
+    --chat-assistant-text: 222.2 84% 4.9%;
+    --chat-hover: 210 40% 92%;
   }
 
   .dark {
+    /* Dark Theme */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
     --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 84% 4.9%;
     --secondary: 217.2 32.6% 17.5%;
@@ -67,6 +129,13 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 94.1%;
+    
+    /* Chat specific colors */
+    --chat-user-bg: 217.2 91.2% 59.8%;
+    --chat-user-text: 222.2 84% 4.9%;
+    --chat-assistant-bg: 217.2 32.6% 17.5%;
+    --chat-assistant-text: 210 40% 98%;
+    --chat-hover: 217.2 32.6% 20%;
   }
 }
 
@@ -79,10 +148,48 @@
   }
 }
 
-/* Markdown 样式优化 */
+/* Component Styles */
 @layer components {
+  /* Chat Message Styles */
+  .chat-message {
+    @apply flex items-start space-x-3 animate-slide-up group;
+  }
+  
+  .chat-message-user {
+    @apply justify-end;
+  }
+  
+  .chat-message-assistant {
+    @apply justify-start;
+  }
+  
+  .chat-bubble {
+    @apply px-4 py-3 rounded-lg relative transition-all duration-200;
+  }
+  
+  .chat-bubble-user {
+    @apply bg-[hsl(var(--chat-user-bg))] text-[hsl(var(--chat-user-text))];
+  }
+  
+  .chat-bubble-assistant {
+    @apply bg-[hsl(var(--chat-assistant-bg))] text-[hsl(var(--chat-assistant-text))];
+  }
+  
+  .chat-avatar {
+    @apply w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1;
+  }
+  
+  .chat-avatar-user {
+    @apply bg-green-500;
+  }
+  
+  .chat-avatar-assistant {
+    @apply bg-blue-500;
+  }
+  
+  /* Markdown Prose Styles */
   .prose {
-    @apply text-gray-700 dark:text-gray-300;
+    @apply text-foreground;
   }
   
   .prose h1,
@@ -91,11 +198,11 @@
   .prose h4,
   .prose h5,
   .prose h6 {
-    @apply text-gray-900 dark:text-white;
+    @apply text-foreground font-semibold;
   }
   
   .prose code {
-    @apply bg-gray-100 dark:bg-gray-800 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded text-sm;
+    @apply bg-muted text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded text-sm font-mono;
   }
   
   .prose pre {
@@ -107,32 +214,53 @@
   }
   
   .prose blockquote {
-    @apply border-l-4 border-blue-500 pl-4 italic text-gray-600 dark:text-gray-400;
+    @apply border-l-4 border-primary pl-4 italic text-muted-foreground bg-muted/50 py-2 rounded-r-lg;
   }
   
   .prose table {
-    @apply border-collapse border border-gray-300 dark:border-gray-600;
+    @apply border-collapse border border-border rounded-lg overflow-hidden;
   }
   
   .prose th,
   .prose td {
-    @apply border border-gray-300 dark:border-gray-600 px-4 py-2;
+    @apply border border-border px-4 py-2;
   }
   
   .prose th {
-    @apply bg-gray-100 dark:bg-gray-800 font-semibold;
+    @apply bg-muted font-semibold text-foreground;
   }
   
   .prose a {
-    @apply text-blue-600 dark:text-blue-400 hover:underline;
+    @apply text-primary hover:underline transition-colors;
   }
   
   .prose ul,
   .prose ol {
-    @apply ml-6;
+    @apply ml-6 space-y-1;
   }
   
   .prose li {
-    @apply mb-1;
+    @apply text-foreground;
+  }
+  
+  /* Utility Classes */
+  .glass-effect {
+    @apply backdrop-blur-sm bg-background/80 border border-border/50;
+  }
+  
+  .gradient-bg {
+    @apply bg-linear-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800;
+  }
+  
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2;
+  }
+  
+  .hover-lift {
+    @apply transition-transform duration-200 hover:scale-105;
+  }
+  
+  .text-balance {
+    text-wrap: balance;
   }
 }
