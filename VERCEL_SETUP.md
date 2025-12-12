@@ -7,14 +7,13 @@
 ### ✅ 已完成的配置
 
 #### 1. **Vercel 配置文件** 📄
-- `vercel.json`: 完整的 Vercel 平台配置
-- 区域设置：香港、新加坡、旧金山
-- API 函数超时：30秒
+- `vercel.json`: 完整的 Vercel 平台配置（已优化为免费计划）
+- API 函数超时：10秒（免费计划限制）
 - 安全头部配置
 - CORS 配置
 
 #### 2. **环境变量管理** 🔐
-- `.env.vercel`: 环境变量模板
+- 在 Vercel Dashboard 中直接配置环境变量
 - 生产/预览/开发环境分离
 - 敏感信息保护
 
@@ -96,6 +95,12 @@ npm run deploy
 | `OPENAI_API_KEY` | 你的 OpenAI API 密钥 | Production, Preview, Development |
 | `NEXT_PUBLIC_APP_URL` | https://your-app-name.vercel.app | Production, Preview |
 
+### ⚠️ 免费计划限制说明
+
+- **函数超时**: 10秒（Pro 计划为 60秒）
+- **区域部署**: 仅支持单区域（已移除多区域配置）
+- **并发执行**: 有限制
+
 ### 📁 项目文件结构
 
 ```
@@ -105,7 +110,7 @@ ai-chat/
 ├── .husky/                       # Git hooks
 ├── types/                        # 全局类型声明
 ├── vercel.json                   # Vercel 配置 ✨
-├── .env.vercel                   # 环境变量模板 ✨
+
 ├── next.config.js                # Next.js 配置（已优化）✨
 ├── DEPLOYMENT.md                 # 部署指南 ✨
 ├── DEPLOYMENT_CHECKLIST.md       # 部署检查清单 ✨
