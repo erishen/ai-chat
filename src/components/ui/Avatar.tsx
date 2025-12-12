@@ -1,35 +1,39 @@
 import { forwardRef, HTMLAttributes } from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
-export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
-  size?: 'sm' | 'md' | 'lg' | 'xl'
-  variant?: 'circle' | 'square'
-}
+const avatarVariants = cva(
+  'relative flex shrink-0 overflow-hidden bg-muted flex items-center justify-center',
+  {
+    variants: {
+      size: {
+        sm: 'h-8 w-8',
+        md: 'h-10 w-10',
+        lg: 'h-12 w-12',
+        xl: 'h-16 w-16',
+      },
+      variant: {
+        circle: 'rounded-full',
+        square: 'rounded-lg',
+      },
+    },
+    defaultVariants: {
+      size: 'md',
+      variant: 'circle',
+    },
+  }
+)
 
-const avatarSizes = {
-  sm: 'h-8 w-8',
-  md: 'h-10 w-10',
-  lg: 'h-12 w-12',
-  xl: 'h-16 w-16',
-}
-
-const avatarVariants = {
-  circle: 'rounded-full',
-  square: 'rounded-lg',
-}
+export interface AvatarProps 
+  extends HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof avatarVariants> {}
 
 export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(
-  ({ className, size = 'md', variant = 'circle', children, ...props }, ref) => {
+  ({ className, size, variant, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={cn(
-          'relative flex shrink-0 overflow-hidden',
-          'bg-muted flex items-center justify-center',
-          avatarSizes[size],
-          avatarVariants[variant],
-          className
-        )}
+        className={cn(avatarVariants({ size, variant, className }))}
         {...props}
       >
         {children}

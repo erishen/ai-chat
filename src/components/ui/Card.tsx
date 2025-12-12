@@ -1,35 +1,40 @@
 import { forwardRef, HTMLAttributes } from 'react'
+import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'outline' | 'elevated'
-  padding?: 'none' | 'sm' | 'md' | 'lg'
-}
+const cardVariants = cva(
+  'rounded-lg transition-colors',
+  {
+    variants: {
+      variant: {
+        default: 'bg-card text-card-foreground border border-border',
+        outline: 'border-2 border-border bg-transparent',
+        elevated: 'bg-card text-card-foreground shadow-lg border border-border',
+      },
+      padding: {
+        none: '',
+        sm: 'p-4',
+        md: 'p-6',
+        lg: 'p-8',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+      padding: 'md',
+    },
+  }
+)
 
-const cardVariants = {
-  default: 'bg-card text-card-foreground border border-border',
-  outline: 'border-2 border-border bg-transparent',
-  elevated: 'bg-card text-card-foreground shadow-lg border border-border',
-}
-
-const cardPadding = {
-  none: '',
-  sm: 'p-4',
-  md: 'p-6',
-  lg: 'p-8',
-}
+export interface CardProps 
+  extends HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof cardVariants> {}
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className, variant = 'default', padding = 'md', children, ...props }, ref) => {
+  ({ className, variant, padding, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={cn(
-          'rounded-lg transition-colors',
-          cardVariants[variant],
-          cardPadding[padding],
-          className
-        )}
+        className={cn(cardVariants({ variant, padding, className }))}
         {...props}
       >
         {children}
