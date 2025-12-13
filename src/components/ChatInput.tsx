@@ -37,7 +37,7 @@ export function ChatInput({ onSendMessage, isLoading }: ChatInputProps) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="输入您的消息... (Shift + Enter 换行)"
-            className="flex-1 min-h-[44px] max-h-32 resize-none"
+            className="flex-1 min-h-11 max-h-32 resize-none"
             disabled={isLoading}
             rows={1}
           />

@@ -32,6 +32,9 @@ Object.defineProperty(window, 'localStorage', {
   value: localStorageMock
 })
 
+// Add React for createElement
+const React = require('react')
+
 // Mock react-markdown and related packages
 jest.mock('react-markdown', () => {
   return function MockReactMarkdown({ children }) {
@@ -51,6 +54,4 @@ jest.mock('react-syntax-highlighter/dist/cjs/styles/prism', () => ({
 
 jest.mock('remark-gfm', () => () => {})
 jest.mock('rehype-raw', () => () => {})
-
-// Add React for createElement
-const React = require('react')
+jest.mock('rehype-highlight', () => () => {})

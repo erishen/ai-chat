@@ -16,6 +16,21 @@ const customJestConfig = {
   transformIgnorePatterns: [
     'node_modules/(?!(react-markdown|remark-gfm|rehype-highlight|rehype-raw|react-syntax-highlighter)/)',
   ],
+  // Memory and performance optimizations
+  testTimeout: 10000,
+  maxWorkers: 1,
+  forceExit: true,
+  silent: false,
+  collectCoverage: false,
+  // Memory management
+  logHeapUsage: true,
+  detectOpenHandles: true,
+  // Limit memory usage
+  workerIdleMemoryLimit: '512MB',
+  // Clear cache between tests
+  clearMocks: true,
+  resetMocks: true,
+  restoreMocks: true,
 }
 
 // createJestConfig is exported this way to ensure that next/jest can load the Next.js config which is async
