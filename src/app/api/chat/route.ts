@@ -1,13 +1,14 @@
 import { createOpenAI } from '@ai-sdk/openai'
 import { streamText } from 'ai'
 import { defaultChatContext } from '@/lib/chatContext'
+import { ragManager } from '@/lib/ragManager'
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json()
+    const { messages, enableRAG = true, ragContext: providedRagContext } = await req.json()
 
     // 优化消息上下文以支持多轮对话
     const optimizedMessages = defaultChatContext.optimizeContext(messages)
@@ -18,9 +19,15 @@ export async function POST(req: Request) {
       contextSummary = defaultChatContext.generateConversationSummary(messages)
     }
 
+    // RAG增强：从客户端传递的上下文
+    let ragContext = ''
+    
+    if (providedRagContext && typeof providedRagContext === 'string') {
+      ragContext = providedRagContext
+    }
+
     // 检查环境变量
     if (!process.env.OPENAI_API_KEY) {
-      console.error('OPENAI_API_KEY is not set')
       return new Response('API key not configured', { status: 500 })
     }
 
@@ -45,15 +52,26 @@ export async function POST(req: Request) {
 - 仔细阅读整个对话历史
 - 理解用户问题与之前对话的关联
 - 在回答中适当引用之前的内容
-- 保持话题的连续性和逻辑性`
+- 保持话题的连续性和逻辑性
+
+RAG增强指导：
+- 如果提供了相关文档信息，请优先基于文档内容回答
+- 在引用文档内容时，要自然地融入回答中
+- 如果文档信息不足以完全回答问题，可以结合你的知识补充
+- 明确区分哪些信息来自文档，哪些是你的推理或建议`
 
     // 如果有对话摘要，添加到系统提示中
     if (contextSummary) {
       systemPrompt += `\n\n对话背景摘要：\n${contextSummary}`
     }
 
+    // 如果有RAG上下文，添加到系统提示中
+    if (ragContext) {
+      systemPrompt += `\n\n${ragContext}`
+    }
+
     const result = await streamText({
-      model: openai('deepseek-chat'),
+      model: openai(process.env.OPENAI_MODEL || ''),
       messages: optimizedMessages,
       system: systemPrompt,
       temperature: 0.7,
@@ -62,13 +80,6 @@ export async function POST(req: Request) {
 
     return result.toDataStreamResponse()
   } catch (error) {
-    console.error('Chat API error:', error)
-    
-    // 更详细的错误信息
-    if (error instanceof Error) {
-      console.error('Error message:', error.message)
-      console.error('Error stack:', error.stack)
-    }
     
     return new Response(
       JSON.stringify({ 

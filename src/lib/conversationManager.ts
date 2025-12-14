@@ -178,7 +178,7 @@ export class ConversationManager {
   /**
    * 生成对话标题
    */
-  private generateTitle(content: string): string {
+  generateTitle(content: string): string {
     const cleanContent = content.trim().replace(/\n/g, ' ')
     if (cleanContent.length <= 20) return cleanContent
     return cleanContent.substring(0, 20) + '...'

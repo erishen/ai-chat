@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG 系统调试工具</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .debug-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+        }
+        .debug-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 15px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+        .error {
+            border-color: #dc3545;
+            background: #f8d7da;
+        }
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>RAG 系统调试工具</h1>
+        <p>用于测试和调试 RAG 系统的各个组件</p>
+    </div>
+
+    <div class="container">
+        <div class="debug-section">
+            <div class="debug-title">1. 检查文档存储</div>
+            <button onclick="checkDocuments()">检查已上传的文档</button>
+            <div id="documentsResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="debug-section">
+            <div class="debug-title">2. 测试向量搜索</div>
+            <div class="input-group">
+                <label for="searchQuery">搜索查询：</label>
+                <input type="text" id="searchQuery" placeholder="输入搜索查询，例如：人工智能" value="人工智能">
+            </div>
+            <button onclick="testVectorSearch()">执行向量搜索</button>
+            <div id="searchResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="debug-section">
+            <div class="debug-title">3. 测试 RAG 上下文生成</div>
+            <div class="input-group">
+                <label for="ragQuery">RAG 查询：</label>
+                <input type="text" id="ragQuery" placeholder="输入问题，例如：什么是机器学习？" value="什么是机器学习？">
+            </div>
+            <button onclick="testRAGContext()">生成 RAG 上下文</button>
+            <div id="ragResult" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="debug-section">
+            <div class="debug-title">4. 测试完整聊天流程</div>
+            <div class="input-group">
+                <label for="chatQuery">聊天问题：</label>
+                <input type="text" id="chatQuery" placeholder="输入聊天问题" value="请介绍一下深度学习">
+            </div>
+            <button onclick="testChatFlow()">测试聊天流程</button>
+            <div id="chatResult" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        async function checkDocuments() {
+            const resultDiv = document.getElementById('documentsResult');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = '正在检查文档...';
+
+            try {
+                // 检查 localStorage 中的文档
+                const documentsData = localStorage.getItem('rag-documents');
+                const chunksData = localStorage.getItem('rag-chunks');
+                
+                const documents = documentsData ? JSON.parse(documentsData) : {};
+                const chunks = chunksData ? JSON.parse(chunksData) : {};
+                
+                const result = {
+                    documentCount: Object.keys(documents).length,
+                    chunkCount: Object.keys(chunks).length,
+                    documents: Object.values(documents).map(doc => ({
+                        id: doc.id,
+                        title: doc.title,
+                        fileType: doc.fileType,
+                        size: doc.size,
+                        uploadedAt: doc.uploadedAt
+                    })),
+                    sampleChunks: Object.values(chunks).slice(0, 3).map(chunk => ({
+                        id: chunk.id,
+                        documentId: chunk.documentId,
+                        contentPreview: chunk.content.substring(0, 100) + '...',
+                        embeddingLength: chunk.embedding ? chunk.embedding.length : 0
+                    }))
+                };
+
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '错误: ' + error.message;
+            }
+        }
+
+        async function testVectorSearch() {
+            const query = document.getElementById('searchQuery').value;
+            const resultDiv = document.getElementById('searchResult');
+            
+            if (!query.trim()) {
+                alert('请输入搜索查询');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = '正在执行向量搜索...';
+
+            try {
+                // 获取文档和块数据
+                const documentsData = localStorage.getItem('rag-documents');
+                const chunksData = localStorage.getItem('rag-chunks');
+                
+                const documents = documentsData ? Object.values(JSON.parse(documentsData)) : [];
+                const chunks = chunksData ? Object.values(JSON.parse(chunksData)) : [];
+
+                const response = await fetch('/api/rag/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query,
+                        documents,
+                        chunks,
+                        topK: 5
+                    })
+                });
+
+                const result = await response.json();
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '错误: ' + error.message;
+            }
+        }
+
+        async function testRAGContext() {
+            const query = document.getElementById('ragQuery').value;
+            const resultDiv = document.getElementById('ragResult');
+            
+            if (!query.trim()) {
+                alert('请输入 RAG 查询');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = '正在生成 RAG 上下文...';
+
+            try {
+                // 模拟 ragManager.generateChatContext 的逻辑
+                const documentsData = localStorage.getItem('rag-documents');
+                const chunksData = localStorage.getItem('rag-chunks');
+                
+                const documents = documentsData ? Object.values(JSON.parse(documentsData)) : [];
+                const chunks = chunksData ? Object.values(JSON.parse(chunksData)) : [];
+
+                // 先执行搜索
+                const searchResponse = await fetch('/api/rag/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query,
+                        documents,
+                        chunks,
+                        topK: 3
+                    })
+                });
+
+                const searchResult = await searchResponse.json();
+                
+                // 生成上下文
+                let context = '';
+                if (searchResult.results && searchResult.results.length > 0) {
+                    context = '基于以下相关文档信息回答用户问题：\n\n';
+                    
+                    searchResult.results.forEach((result, index) => {
+                        context += `文档${index + 1}：${result.document.title}\n`;
+                        context += `内容：${result.chunk.content}\n`;
+                        context += `相关性：${result.relevance}\n\n`;
+                    });
+
+                    context += '请基于上述文档内容回答用户问题，如果文档中没有相关信息，请说明并提供一般性建议。';
+                } else {
+                    context = '没有找到相关文档内容。';
+                }
+
+                const result = {
+                    query,
+                    searchResults: searchResult,
+                    generatedContext: context
+                };
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '错误: ' + error.message;
+            }
+        }
+
+        async function testChatFlow() {
+            const query = document.getElementById('chatQuery').value;
+            const resultDiv = document.getElementById('chatResult');
+            
+            if (!query.trim()) {
+                alert('请输入聊天问题');
+                return;
+            }
+
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result loading';
+            resultDiv.textContent = '正在测试完整聊天流程...';
+
+            try {
+                // 1. 生成 RAG 上下文
+                const documentsData = localStorage.getItem('rag-documents');
+                const chunksData = localStorage.getItem('rag-chunks');
+                
+                const documents = documentsData ? Object.values(JSON.parse(documentsData)) : [];
+                const chunks = chunksData ? Object.values(JSON.parse(chunksData)) : [];
+
+                let ragContext = '';
+                if (documents.length > 0 && chunks.length > 0) {
+                    const searchResponse = await fetch('/api/rag/search', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query,
+                            documents,
+                            chunks,
+                            topK: 3
+                        })
+                    });
+
+                    const searchResult = await searchResponse.json();
+                    
+                    if (searchResult.results && searchResult.results.length > 0) {
+                        ragContext = '基于以下相关文档信息回答用户问题：\n\n';
+                        
+                        searchResult.results.forEach((result, index) => {
+                            ragContext += `文档${index + 1}：${result.document.title}\n`;
+                            ragContext += `内容：${result.chunk.content}\n`;
+                            ragContext += `相关性：${result.relevance}\n\n`;
+                        });
+
+                        ragContext += '请基于上述文档内容回答用户问题，如果文档中没有相关信息，请说明并提供一般性建议。';
+                    }
+                }
+
+                // 2. 测试聊天 API
+                const chatResponse = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        messages: [
+                            { role: 'user', content: query }
+                        ],
+                        ragContext: ragContext
+                    })
+                });
+
+                const result = {
+                    query,
+                    ragContextGenerated: ragContext ? true : false,
+                    ragContextLength: ragContext.length,
+                    ragContextPreview: ragContext.substring(0, 500) + (ragContext.length > 500 ? '...' : ''),
+                    chatApiStatus: chatResponse.status,
+                    chatApiOk: chatResponse.ok
+                };
+                
+                resultDiv.className = 'result success';
+                resultDiv.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = '错误: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

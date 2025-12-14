@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useChat } from '@ai-sdk/react'
 import { Message, Conversation } from '@/types/chat'
 import { conversationManager } from '@/lib/conversationManager'
+import { ragManager } from '@/lib/ragManager'
 
 export interface UseMultiTurnChatOptions {
   conversationId?: string
@@ -17,6 +18,8 @@ export function useMultiTurnChat(options: UseMultiTurnChatOptions = {}) {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [isInitialized, setIsInitialized] = useState(false)
 
+  const [ragContextState, setRagContextState] = useState('')
+
   const { 
     messages, 
     input, 
@@ -25,19 +28,8 @@ export function useMultiTurnChat(options: UseMultiTurnChatOptions = {}) {
     isLoading, 
     setMessages 
   } = useChat({
-    onFinish: (message) => {
-      if (autoSave && currentConversationId) {
-        // 保存AI回复到对话历史
-        const aiMessage: Message = {
-          id: message.id,
-          role: 'assistant',
-          content: message.content,
-          timestamp: new Date(),
-          conversationId: currentConversationId
-        }
-        conversationManager.addMessageToConversation(currentConversationId, aiMessage)
-        loadConversations()
-      }
+    body: {
+      ragContext: ragContextState
     }
   })
 
@@ -47,11 +39,61 @@ export function useMultiTurnChat(options: UseMultiTurnChatOptions = {}) {
     setConversations(allConversations)
   }, [])
 
+  // 监听messages变化并自动保存
+  useEffect(() => {
+    if (!currentConversationId || messages.length === 0) return
+    
+    // 转换为我们的消息格式
+    const formattedMessages = messages.map(msg => ({
+      id: msg.id,
+      role: msg.role as 'user' | 'assistant',
+      content: msg.content,
+      timestamp: new Date(),
+      conversationId: currentConversationId
+    }))
+    
+    // 获取当前对话信息
+    const currentConversation = conversationManager.getConversation(currentConversationId)
+    
+    // 更新对话，保留现有标题或生成新标题
+    const updateData: any = {
+      messages: formattedMessages
+    }
+    
+    // 标题生成逻辑
+    if (!currentConversation?.title || currentConversation.title === '新对话') {
+      const firstUserMessage = formattedMessages.find(msg => msg.role === 'user')
+      if (firstUserMessage) {
+        updateData.title = conversationManager.generateTitle(firstUserMessage.content)
+      }
+    }
+    
+    try {
+      conversationManager.updateConversation(currentConversationId, updateData)
+      
+      // 重新加载对话列表以更新UI
+      const allConversations = conversationManager.getAllConversations()
+      setConversations(allConversations)
+    } catch (error) {
+      console.error('Failed to save conversation:', error)
+    }
+  }, [messages, currentConversationId])
+
   // 客户端初始化
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      // 检查是否是首次使用（没有任何对话数据）
+      const allConversations = conversationManager.getAllConversations()
       const savedConversationId = initialConversationId || conversationManager.getCurrentConversationId()
-      setCurrentConversationId(savedConversationId)
+      
+      // 如果没有对话且没有当前对话ID，创建一个新对话
+      if (allConversations.length === 0 && !savedConversationId) {
+        const newConversation = conversationManager.createConversation()
+        setCurrentConversationId(newConversation.id)
+      } else {
+        setCurrentConversationId(savedConversationId)
+      }
+      
       setIsInitialized(true)
     }
   }, [initialConversationId])
@@ -66,8 +108,20 @@ export function useMultiTurnChat(options: UseMultiTurnChatOptions = {}) {
     if (currentConversationId) {
       const conversation = conversationManager.getConversation(currentConversationId)
       if (conversation) {
-        setMessages(conversation.messages)
+        // 确保消息格式正确
+        const formattedMessages = conversation.messages.map(msg => ({
+          id: msg.id,
+          role: msg.role,
+          content: msg.content,
+          createdAt: msg.timestamp || new Date()
+        }))
+        
+        setMessages(formattedMessages)
+      } else {
+        setMessages([])
       }
+    } else {
+      setMessages([])
     }
   }, [currentConversationId, setMessages, loadConversations, isInitialized])
 
@@ -86,7 +140,16 @@ export function useMultiTurnChat(options: UseMultiTurnChatOptions = {}) {
     if (conversation) {
       setCurrentConversationId(conversationId)
       conversationManager.setCurrentConversation(conversationId)
-      setMessages(conversation.messages)
+      
+      // 确保消息格式正确
+      const formattedMessages = conversation.messages.map(msg => ({
+        id: msg.id,
+        role: msg.role,
+        content: msg.content,
+        createdAt: msg.timestamp || new Date()
+      }))
+      
+      setMessages(formattedMessages)
     }
   }, [setMessages])
 
@@ -115,7 +178,7 @@ export function useMultiTurnChat(options: UseMultiTurnChatOptions = {}) {
   }, [currentConversationId, setMessages, loadConversations])
 
   // 增强的提交处理
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     
     // 如果没有当前对话，创建新对话
@@ -125,24 +188,29 @@ export function useMultiTurnChat(options: UseMultiTurnChatOptions = {}) {
       conversationId = newConversation.id
     }
 
-    // 保存用户消息
-    if (autoSave && conversationId && input.trim()) {
-      const userMessage: Message = {
-        id: `user_${Date.now()}`,
-        role: 'user',
-        content: input.trim(),
-        timestamp: new Date(),
-        conversationId
+    // 生成RAG上下文（在客户端）
+    if (input.trim()) {
+      try {
+        const ragContext = await ragManager.generateChatContext(input.trim(), 3)
+        
+        // 设置RAG上下文状态
+        setRagContextState(ragContext)
+        
+        // 等待状态更新后再提交
+        setTimeout(() => {
+          originalHandleSubmit(e)
+        }, 50)
+        
+        return
+      } catch (error) {
+        // 忽略RAG错误，继续正常聊天
       }
-      conversationManager.addMessageToConversation(conversationId, userMessage)
     }
-
-    // 调用原始提交处理
-    originalHandleSubmit(e)
     
-    // 重新加载对话列表
-    loadConversations()
-  }, [currentConversationId, createNewConversation, autoSave, input, originalHandleSubmit, loadConversations])
+    // 如果没有输入或RAG生成失败，直接提交
+    setRagContextState('')
+    originalHandleSubmit(e)
+  }, [currentConversationId, createNewConversation, input, originalHandleSubmit])
 
   // 获取当前对话
   const currentConversation = currentConversationId 

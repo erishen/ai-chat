@@ -1,15 +1,31 @@
 # AI Chat - 智能聊天助手
 
-一个基于 Next.js 15 和 Vercel AI SDK 构建的现代化智能聊天应用，支持实时对话、Markdown 渲染、代码高亮等功能。
+一个基于 Next.js 15 和 Vercel AI SDK 构建的现代化智能聊天应用，支持多轮对话、RAG 文档检索、Markdown 渲染等功能。
 
 ## ✨ 特性
 
 ### 🎯 核心功能
 - **智能对话**: 基于 OpenAI GPT 模型的智能聊天
+- **多轮对话**: 支持完整的对话历史管理和持久化
 - **实时流式响应**: 支持流式数据传输，实时显示 AI 回复
+- **RAG 文档检索**: 支持文档上传、向量化和智能检索
 - **Markdown 支持**: 完整的 Markdown 渲染，包括代码高亮
 - **代码复制**: 一键复制代码块功能
 - **主题切换**: 支持浅色/深色/跟随系统主题
+
+### 🗂️ 对话管理
+- **对话历史**: 自动保存和管理多个对话会话
+- **智能标题**: 基于对话内容自动生成对话标题
+- **数据持久化**: 使用 localStorage 实现客户端数据持久化
+- **对话切换**: 支持在不同对话间快速切换
+- **对话删除**: 支持删除不需要的对话记录
+
+### 📚 RAG 文档系统
+- **文档上传**: 支持 TXT、MD 格式文档上传
+- **智能分块**: 自动将文档分割为语义块
+- **向量存储**: 本地向量数据库存储和检索
+- **上下文增强**: 基于文档内容增强 AI 回复质量
+- **文档管理**: 完整的文档增删改查功能
 
 ### 🎨 设计系统
 - **组件化架构**: 完整的 UI 组件库
@@ -41,6 +57,13 @@
 - **Vercel AI SDK**: AI 应用开发工具包
 - **OpenAI GPT**: 大语言模型
 - **流式响应**: 实时数据传输
+- **RAG 系统**: 检索增强生成
+
+### 向量处理
+- **@xenova/transformers**: 客户端向量化
+- **本地向量存储**: 基于 localStorage 的向量数据库
+- **语义搜索**: 余弦相似度计算
+- **文档分块**: 智能文本分割
 
 ### Markdown 渲染
 - **react-markdown**: Markdown 渲染器
@@ -104,7 +127,11 @@ pnpm dev
 ai-chat/
 ├── src/
 │   ├── app/                    # Next.js App Router
-│   │   ├── api/chat/          # API 路由
+│   │   ├── api/               # API 路由
+│   │   │   ├── chat/          # 聊天 API
+│   │   │   ├── documents/     # 文档管理 API
+│   │   │   ├── embeddings/    # 向量化 API
+│   │   │   └── rag/           # RAG 搜索 API
 │   │   ├── globals.css        # 全局样式
 │   │   ├── layout.tsx         # 根布局
 │   │   └── page.tsx           # 主页面
@@ -123,12 +150,28 @@ ai-chat/
 │   │   ├── ChatMessage.tsx    # 聊天消息组件
 │   │   ├── ChatMessages.tsx   # 消息列表组件
 │   │   ├── ChatHeader.tsx     # 聊天头部组件
+│   │   ├── ChatInput.tsx      # 聊天输入组件
+│   │   ├── ConversationSidebar.tsx # 对话侧边栏
+│   │   ├── DocumentUpload.tsx # 文档上传组件
+│   │   ├── DocumentList.tsx   # 文档列表组件
+│   │   ├── RAGPanel.tsx       # RAG 管理面板
+│   │   ├── SearchResults.tsx  # 搜索结果组件
 │   │   ├── MarkdownRenderer.tsx # Markdown 渲染器
 │   │   └── ErrorBoundary.tsx  # 错误边界
+│   ├── hooks/                 # React Hooks
+│   │   └── useMultiTurnChat.ts # 多轮对话 Hook
 │   ├── lib/                   # 工具库
-│   │   └── utils.ts           # 工具函数
+│   │   ├── utils.ts           # 工具函数
+│   │   ├── conversationManager.ts # 对话管理器
+│   │   ├── documentProcessor.ts # 文档处理器
+│   │   ├── ragManager.ts      # RAG 管理器
+│   │   ├── vectorStore.ts     # 向量存储接口
+│   │   ├── localStorageVectorStore.ts # localStorage 向量存储
+│   │   ├── memoryVectorStore.ts # 内存向量存储
+│   │   └── vectorUtils.ts     # 向量工具函数
 │   ├── types/                 # TypeScript 类型定义
-│   │   └── chat.ts            # 聊天相关类型
+│   │   ├── chat.ts            # 聊天相关类型
+│   │   └── rag.ts             # RAG 相关类型
 │   └── __tests__/             # 测试文件
 ├── types/                     # 全局类型声明
 ├── public/                    # 静态资源
@@ -140,22 +183,39 @@ ai-chat/
 
 ## 🎯 主要功能
 
-### 聊天功能
-- 实时 AI 对话
-- 流式响应显示
-- 消息时间戳
-- 消息复制功能
+### 💬 聊天功能
+- **实时 AI 对话**: 基于 OpenAI GPT 模型的智能对话
+- **流式响应显示**: 实时显示 AI 回复过程
+- **多轮对话**: 支持上下文连续对话
+- **消息时间戳**: 显示消息发送时间
+- **消息复制功能**: 一键复制消息内容
 
-### 界面功能
-- 响应式设计
-- 明暗主题切换
-- 平滑动画效果
-- 消息自动滚动
+### 📚 RAG 文档系统
+- **文档上传**: 支持 TXT、MD 格式文档
+- **智能分块**: 自动将文档分割为语义块
+- **向量检索**: 基于语义相似度的文档检索
+- **上下文增强**: 结合文档内容生成更准确的回复
+- **文档管理**: 完整的文档增删改查功能
 
-### 管理功能
-- 清空聊天记录
-- 消息计数显示
-- 加载状态指示
+### 🗂️ 对话管理
+- **对话历史**: 自动保存所有对话记录
+- **智能标题**: 基于对话内容自动生成标题
+- **对话切换**: 在多个对话间快速切换
+- **数据持久化**: 页面刷新后数据不丢失
+- **对话删除**: 删除不需要的对话记录
+
+### 🎨 界面功能
+- **响应式设计**: 适配桌面和移动设备
+- **明暗主题切换**: 支持浅色/深色主题
+- **平滑动画效果**: 流畅的交互体验
+- **消息自动滚动**: 自动滚动到最新消息
+- **侧边栏管理**: 可折叠的对话历史侧边栏
+
+### ⚙️ 管理功能
+- **清空聊天记录**: 一键清空当前对话
+- **消息计数显示**: 实时显示消息数量
+- **加载状态指示**: 清晰的加载状态反馈
+- **错误处理**: 优雅的错误提示和恢复
 
 ## 🔧 自定义配置
 
@@ -212,6 +272,47 @@ npm start
 - \`npm run build\` - 构建生产版本
 - \`npm run start\` - 启动生产服务器
 - \`npm run lint\` - 运行 ESLint 检查
+- \`npm run test\` - 运行单元测试
+
+## 🔧 核心架构
+
+### 多轮对话系统
+- **useMultiTurnChat Hook**: 统一管理对话状态和逻辑
+- **ConversationManager**: 处理对话的增删改查和持久化
+- **localStorage 持久化**: 客户端数据持久化存储
+
+### RAG 检索系统
+- **混合架构**: 客户端向量化 + 服务端语义搜索
+- **文档处理流程**: 上传 → 分块 → 向量化 → 存储
+- **智能检索**: 基于余弦相似度的语义搜索
+- **上下文生成**: 动态生成相关文档上下文
+
+### 向量存储
+- **LocalStorageVectorStore**: 基于 localStorage 的向量数据库
+- **MemoryVectorStore**: 内存向量存储（开发调试用）
+- **向量工具**: 余弦相似度计算、向量归一化等
+
+## 🎨 使用指南
+
+### 基本聊天
+1. 在输入框中输入问题
+2. 按 Enter 或点击发送按钮
+3. 查看 AI 的实时回复
+
+### 多轮对话
+1. 点击侧边栏的"新建对话"创建新会话
+2. 在不同对话间切换
+3. 每个对话都有独立的上下文
+
+### 文档上传与检索
+1. 点击"显示文档管理"按钮
+2. 上传 TXT 或 MD 格式的文档
+3. 文档会自动分块并向量化
+4. 在聊天中提问时会自动检索相关文档内容
+
+### 主题切换
+1. 点击右上角的主题切换按钮
+2. 选择浅色、深色或跟随系统主题
 
 ## 🤝 贡献
 
@@ -223,8 +324,11 @@ MIT License
 
 ## 🙏 致谢
 
-- [Next.js](https://nextjs.org/) - React 框架
-- [Vercel AI SDK](https://sdk.vercel.ai/) - AI 集成工具
-- [Tailwind CSS](https://tailwindcss.com/) - CSS 框架
-- [Lucide React](https://lucide.dev/) - 图标库
+- [Next.js](https://nextjs.org/) - React 全栈框架
+- [Vercel AI SDK](https://sdk.vercel.ai/) - AI 集成工具包
+- [Tailwind CSS](https://tailwindcss.com/) - 原子化 CSS 框架
+- [Lucide React](https://lucide.dev/) - 现代图标库
 - [OpenAI](https://openai.com/) - AI 模型提供商
+- [@xenova/transformers](https://huggingface.co/docs/transformers.js/) - 客户端机器学习
+- [react-markdown](https://github.com/remarkjs/react-markdown) - Markdown 渲染器
+- [TypeScript](https://www.typescriptlang.org/) - 类型安全的 JavaScript

@@ -4,14 +4,16 @@ import { useState } from 'react'
 import { ChatHeader } from '@/components/ChatHeader'
 import { ChatMessages } from '@/components/ChatMessages'
 import { ConversationSidebar } from '@/components/ConversationSidebar'
+import { RAGPanel } from '@/components/RAGPanel'
 import { useMultiTurnChat } from '@/hooks/useMultiTurnChat'
 import { Message } from '@/types/chat'
-import { Send } from 'lucide-react'
+import { Send, Database } from 'lucide-react'
 import { Container, Flex } from '@/components/layout'
 import { Card, Button, Textarea } from '@/components/ui'
 
 export default function Home() {
   const [showSidebar, setShowSidebar] = useState(true)
+  const [showRAGPanel, setShowRAGPanel] = useState(false)
   
   const {
     messages,
@@ -87,6 +89,31 @@ export default function Home() {
             onToggleSidebar={() => setShowSidebar(!showSidebar)}
             showSidebar={showSidebar}
           />
+
+          {/* RAG面板切换按钮 */}
+          <div className="mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowRAGPanel(!showRAGPanel)}
+              className="flex items-center gap-2"
+            >
+              <Database className="w-4 h-4" />
+              {showRAGPanel ? '隐藏文档管理' : '显示文档管理'}
+            </Button>
+          </div>
+
+          {/* RAG面板 */}
+          {showRAGPanel && (
+            <div className="mb-4">
+              <RAGPanel 
+                currentQuery={input.trim()}
+                onDocumentChange={() => {
+                  // 文档变化时可以做一些处理，比如重新搜索
+                }}
+              />
+            </div>
+          )}
 
           <Card variant="elevated" padding="none" className="flex-1 overflow-hidden flex flex-col glass-effect">
             <ChatMessages 
