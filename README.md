@@ -318,6 +318,15 @@ npm start
 
 欢迎提交 Issue 和 Pull Request！
 
+## 🔗 相关链接
+
+### 技术分享文章
+- **思否文章**：[从零到一：打造一个支持 RAG 的智能聊天应用](https://segmentfault.com/a/1190000047472293)
+- **掘金文章**：[从零到一：打造一个支持 RAG 的智能聊天应用](https://juejin.cn/post/7583344281734676526)
+
+### 项目资源
+- **在线演示**：[Live Demo](https://ai-chat-eight-phi.vercel.app)
+
 ## 📄 许可证
 
 MIT License
