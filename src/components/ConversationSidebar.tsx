@@ -128,7 +128,7 @@ export function ConversationSidebar({
                     <div
                       key={conversation.id}
                       className={cn(
-                        'group relative rounded-lg p-3 cursor-pointer transition-colors',
+                        'group rounded-lg p-3 cursor-pointer transition-colors',
                         'hover:bg-accent/50',
                         currentConversationId === conversation.id
                           ? 'bg-accent text-accent-foreground'
