@@ -54,27 +54,23 @@ DOCKER_CMD+=("--name" "ai-chat")
 DOCKER_CMD+=("-p" "3000:3000")
 DOCKER_CMD+=("-e" "PORT=3000")
 
-# 从 .env.production 添加所有环境变量
+# 从已加载的环境变量中添加到容器（从 .env.production 加载的变量）
 if [[ -f ".env.production" ]]; then
-    # 读取 .env.production 文件,将所有非注释变量添加到容器
-    while IFS='=' read -r key value || [[ -n "$key" ]]; do
+    # 读取 .env.production 文件获取变量名,然后从已导出的环境变量中获取值
+    while IFS='=' read -r line || [[ -n "$line" ]]; do
         # 跳过注释和空行
-        [[ $key =~ ^#.*$ ]] && continue
-        [[ -z $key ]] && continue
-        
-        # 移除值中的引号
-        value="${value%\"}"
-        value="${value#\"}"
-        value="${value%\'}"
-        value="${value#\'}"
-        
-        # 移除前后的空格
+        [[ $line =~ ^#.*$ ]] && continue
+        [[ -z $line ]] && continue
+
+        # 提取变量名（=号之前的部分）
+        key="${line%%=*}"
+
+        # 移除变量名前后的空格
         key="${key# }"
         key="${key% }"
-        value="${value# }"
-        value="${value% }"
-        
-        # 通过间接引用获取实际值
+        [[ -z $key ]] && continue
+
+        # 从已导出的环境变量中获取值
         if [[ -n "${!key}" ]]; then
             DOCKER_CMD+=("-e" "$key=${!key}")
         fi
