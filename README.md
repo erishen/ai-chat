@@ -226,9 +226,7 @@ npm start
 ---
 
 ## Related Articles
-
-- English: [Building a RAG Smart Chat App](https://erishen.cn/building-rag-smart-chat-app/)
-- 中文: [从零打造支持 RAG 的智能聊天应用](https://erishen.cn/building-rag-smart-chat-app-cn/)
+- [From Zero to One: Building a RAG-Powered Smart Chat Application](https://erishen.cn/building-rag-smart-chat-app/)
 
 ## License
 

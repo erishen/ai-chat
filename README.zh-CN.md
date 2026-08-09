@@ -345,6 +345,4 @@ MIT License
 ---
 
 ## 相关文章
-
-- 中文: [从零打造支持 RAG 的智能聊天应用](https://erishen.cn/building-rag-smart-chat-app-cn/)
-- English: [Building a RAG Smart Chat App](https://erishen.cn/building-rag-smart-chat-app/)
+- [从零到一：打造一个支持 RAG 的智能聊天应用](https://erishen.cn/building-rag-smart-chat-app-cn/)
