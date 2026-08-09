@@ -223,6 +223,13 @@ npm start
 - **Live Demo**: https://chat.erishen.cn
 - **Articles**: [SegmentFault](https://segmentfault.com/a/1190000047472293) | [Juejin](https://juejin.cn/post/7583344281734676526)
 
+---
+
+## Related Articles
+
+- English: [Building a RAG Smart Chat App](https://erishen.cn/building-rag-smart-chat-app/)
+- 中文: [从零打造支持 RAG 的智能聊天应用](https://erishen.cn/building-rag-smart-chat-app-cn/)
+
 ## License
 
 MIT License

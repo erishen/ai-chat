@@ -341,3 +341,10 @@ MIT License
 - [@xenova/transformers](https://huggingface.co/docs/transformers.js/) - 客户端机器学习
 - [react-markdown](https://github.com/remarkjs/react-markdown) - Markdown 渲染器
 - [TypeScript](https://www.typescriptlang.org/) - 类型安全的 JavaScript
+
+---
+
+## 相关文章
+
+- 中文: [从零打造支持 RAG 的智能聊天应用](https://erishen.cn/building-rag-smart-chat-app-cn/)
+- English: [Building a RAG Smart Chat App](https://erishen.cn/building-rag-smart-chat-app/)
